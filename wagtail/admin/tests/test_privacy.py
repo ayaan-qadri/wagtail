@@ -400,9 +400,25 @@ class TestPrivacyIndicators(WagtailTestUtils, TestCase):
 
         # Check the privacy indicator is public
         self.assertContains(
-            response, '<div class="w-hidden" data-privacy-sidebar-private>'
+            response,
+            '''data-privacy-sidebar-private
+            class="w-hidden"
+            data-controller="w-zone"
+            data-action="w-privacy:changed@document->w-zone#switch"
+            data-w-zone-inactive-class="w-hidden"
+            data-w-zone-mode-value=""
+            data-w-zone-switch-key-value="!isPublic"''',
         )
-        self.assertContains(response, '<div class="" data-privacy-sidebar-public>')
+        self.assertContains(
+            response,
+            '''data-privacy-sidebar-public
+            class=""
+            data-controller="w-zone"
+            data-action="w-privacy:changed@document->w-zone#switch"
+            data-w-zone-inactive-class="w-hidden"
+            data-w-zone-mode-value="active"
+            data-w-zone-switch-key-value="isPublic"''',
+        )
 
     def test_explorer_private(self):
         """
@@ -438,9 +454,25 @@ class TestPrivacyIndicators(WagtailTestUtils, TestCase):
         self.assertEqual(response.status_code, 200)
 
         # Check the privacy indicator is private
-        self.assertContains(response, '<div class="" data-privacy-sidebar-private>')
         self.assertContains(
-            response, '<div class="w-hidden" data-privacy-sidebar-public>'
+            response,
+            '''data-privacy-sidebar-private
+            class=""
+            data-controller="w-zone"
+            data-action="w-privacy:changed@document->w-zone#switch"
+            data-w-zone-inactive-class="w-hidden"
+            data-w-zone-mode-value="active"
+            data-w-zone-switch-key-value="!isPublic"''',
+        )
+        self.assertContains(
+            response,
+            '''data-privacy-sidebar-public
+            class="w-hidden"
+            data-controller="w-zone"
+            data-action="w-privacy:changed@document->w-zone#switch"
+            data-w-zone-inactive-class="w-hidden"
+            data-w-zone-mode-value=""
+            data-w-zone-switch-key-value="isPublic"''',
         )
 
     def test_explorer_list_homepage(self):
@@ -493,9 +525,25 @@ class TestPrivacyIndicators(WagtailTestUtils, TestCase):
 
         # Check the privacy indicator is public
         self.assertContains(
-            response, '<div class="w-hidden" data-privacy-sidebar-private>'
+            response,
+            '''data-privacy-sidebar-private
+            class="w-hidden"
+            data-controller="w-zone"
+            data-action="w-privacy:changed@document->w-zone#switch"
+            data-w-zone-inactive-class="w-hidden"
+            data-w-zone-mode-value=""
+            data-w-zone-switch-key-value="!isPublic"''',
         )
-        self.assertContains(response, '<div class="" data-privacy-sidebar-public>')
+        self.assertContains(
+            response,
+            '''data-privacy-sidebar-public
+            class=""
+            data-controller="w-zone"
+            data-action="w-privacy:changed@document->w-zone#switch"
+            data-w-zone-inactive-class="w-hidden"
+            data-w-zone-mode-value="active"
+            data-w-zone-switch-key-value="isPublic"''',
+        )
 
     def test_edit_private(self):
         """
@@ -509,9 +557,25 @@ class TestPrivacyIndicators(WagtailTestUtils, TestCase):
         self.assertEqual(response.status_code, 200)
 
         # Check the privacy indicator is private
-        self.assertContains(response, '<div class="" data-privacy-sidebar-private>')
         self.assertContains(
-            response, '<div class="w-hidden" data-privacy-sidebar-public>'
+            response,
+            '''data-privacy-sidebar-private
+            class=""
+            data-controller="w-zone"
+            data-action="w-privacy:changed@document->w-zone#switch"
+            data-w-zone-inactive-class="w-hidden"
+            data-w-zone-mode-value="active"
+            data-w-zone-switch-key-value="!isPublic"''',
+        )
+        self.assertContains(
+            response,
+            '''data-privacy-sidebar-public
+            class="w-hidden"
+            data-controller="w-zone"
+            data-action="w-privacy:changed@document->w-zone#switch"
+            data-w-zone-inactive-class="w-hidden"
+            data-w-zone-mode-value=""
+            data-w-zone-switch-key-value="isPublic"''',
         )
 
     def test_edit_private_child(self):
@@ -526,9 +590,25 @@ class TestPrivacyIndicators(WagtailTestUtils, TestCase):
         self.assertEqual(response.status_code, 200)
 
         # Check the privacy indicator is private
-        self.assertContains(response, '<div class="" data-privacy-sidebar-private>')
         self.assertContains(
-            response, '<div class="w-hidden" data-privacy-sidebar-public>'
+            response,
+            '''data-privacy-sidebar-private
+            class=""
+            data-controller="w-zone"
+            data-action="w-privacy:changed@document->w-zone#switch"
+            data-w-zone-inactive-class="w-hidden"
+            data-w-zone-mode-value="active"
+            data-w-zone-switch-key-value="!isPublic"''',
+        )
+        self.assertContains(
+            response,
+            '''data-privacy-sidebar-public
+            class="w-hidden"
+            data-controller="w-zone"
+            data-action="w-privacy:changed@document->w-zone#switch"
+            data-w-zone-inactive-class="w-hidden"
+            data-w-zone-mode-value=""
+            data-w-zone-switch-key-value="isPublic"''',
         )
 
     def test_private_page_options_only_password_groups(self):

@@ -166,4 +166,139 @@ describe('ZoneController', () => {
       expect(element.classList.contains('hovered')).toBe(false);
     });
   });
+
+  describe('switch method', () => {
+    it('should set mode to ZoneMode.Active("active") if the key is truthy', async () => {
+      await setup(`
+        <div
+          class="switch-zone"
+          data-controller="w-zone"
+          data-action="custom-event->w-zone#switch"
+        ></div>
+      `);
+
+      const element = document.querySelector('.switch-zone');
+      const event = new CustomEvent('custom-event', {
+        detail: { active: true },
+      });
+      element.dispatchEvent(event);
+
+      const controller = application.getControllerForElementAndIdentifier(
+        element,
+        'w-zone',
+      );
+      expect(controller.modeValue).toBe('active');
+    });
+
+    it('should set mode to ZoneMode.Inactive("") if the key is falsy', async () => {
+      await setup(`
+        <div
+          class="switch-zone"
+          data-controller="w-zone"
+          data-action="custom-event->w-zone#switch"
+        ></div>
+      `);
+
+      const element = document.querySelector('.switch-zone');
+      const event = new CustomEvent('custom-event', {
+        detail: { active: false },
+      });
+      element.dispatchEvent(event);
+
+      const controller = application.getControllerForElementAndIdentifier(
+        element,
+        'w-zone',
+      );
+      expect(controller.modeValue).toBe('');
+    });
+
+    it('should log an error if the key is not found in the event detail or params', async () => {
+      console.error = jest.fn(); // Mock console.error
+
+      await setup(`
+        <div
+          class="switch-zone"
+          data-controller="w-zone"
+          data-action="custom-event->w-zone#switch"
+        ></div>
+      `);
+
+      const element = document.querySelector('.switch-zone');
+      const event = new CustomEvent('custom-event', { detail: {} });
+      element.dispatchEvent(event);
+
+      expect(console.error).toHaveBeenCalledWith(
+        'Switch key not found in event detail or params or data attribute of value',
+      );
+    });
+
+    it('should handle negated keys correctly', async () => {
+      await setup(`
+        <div
+          class="switch-zone"
+          data-controller="w-zone"
+          data-action="custom-event->w-zone#switch"
+          data-w-zone-switch-key-value="!active"
+        ></div>
+      `);
+
+      const element = document.querySelector('.switch-zone');
+      const event = new CustomEvent('custom-event', {
+        detail: { active: true },
+      });
+      element.dispatchEvent(event);
+
+      const controller = application.getControllerForElementAndIdentifier(
+        element,
+        'w-zone',
+      );
+      expect(controller.modeValue).toBe(''); // Negated key means truthy value results in Inactive
+    });
+
+    it('should fall back to ZoneMode.Active("active") as the default key', async () => {
+      await setup(`
+        <div
+          class="switch-zone"
+          data-controller="w-zone"
+          data-action="custom-event->w-zone#switch"
+        ></div>
+      `);
+
+      const element = document.querySelector('.switch-zone');
+      const event = new CustomEvent('custom-event', {
+        detail: { active: true },
+      });
+      element.dispatchEvent(event);
+
+      const controller = application.getControllerForElementAndIdentifier(
+        element,
+        'w-zone',
+      );
+      expect(controller.modeValue).toBe('active');
+    });
+
+    it('should prioritize event-detail over params if both are present', async () => {
+      await setup(`
+        <div
+          class="switch-zone"
+          data-controller="w-zone"
+          data-action="custom-event->w-zone#switch"
+        ></div>
+      `);
+
+      const element = document.querySelector('.switch-zone');
+      const event = new CustomEvent('custom-event', {
+        detail: { active: true },
+      });
+      event.params = { active: false };
+
+      element.dispatchEvent(event);
+
+      const controller = application.getControllerForElementAndIdentifier(
+        element,
+        'w-zone',
+      );
+      expect(controller.modeValue).toBe('active'); // event-detail take precedence
+    });
+  });
 });
