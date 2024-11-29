@@ -14,7 +14,8 @@
         data-w-zone-active-class="public"
         data-w-zone-inactive-class="private"
         data-w-zone-mode-value="{% if is_public %}active{% endif %}"
-        data-w-zone-switch-key-value="isPublic">
+        data-w-zone-switch-key-value="isPublic"
+    >
         {% trans "Privacy" %}
         <button type="button" data-a11y-dialog-show="set-privacy" class="button button-small button-secondary">
             {# labels are shown/hidden in CSS according to the 'private' / 'public' class on view-permission-indicator #}

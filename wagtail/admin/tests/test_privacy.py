@@ -398,27 +398,16 @@ class TestPrivacyIndicators(WagtailTestUtils, TestCase):
         # Check the response
         self.assertEqual(response.status_code, 200)
 
+        soup = self.get_soup(response.content)
+
+        public_link = soup.select_one('[data-w-zone-switch-key-value="isPublic"]')
+        private_link = soup.select_one('[data-w-zone-switch-key-value="!isPublic"]')
+
         # Check the privacy indicator is public
-        self.assertContains(
-            response,
-            '''data-privacy-sidebar-private
-            class="w-hidden"
-            data-controller="w-zone"
-            data-action="w-privacy:changed@document->w-zone#switch"
-            data-w-zone-inactive-class="w-hidden"
-            data-w-zone-mode-value=""
-            data-w-zone-switch-key-value="!isPublic"''',
-        )
-        self.assertContains(
-            response,
-            '''data-privacy-sidebar-public
-            class=""
-            data-controller="w-zone"
-            data-action="w-privacy:changed@document->w-zone#switch"
-            data-w-zone-inactive-class="w-hidden"
-            data-w-zone-mode-value="active"
-            data-w-zone-switch-key-value="isPublic"''',
-        )
+        self.assertEqual(private_link["class"], ["page-status-tag", "w-hidden"])
+
+        # Check the privacy indicator is private
+        self.assertEqual(public_link["class"], ["page-status-tag"])
 
     def test_explorer_private(self):
         """
@@ -433,14 +422,14 @@ class TestPrivacyIndicators(WagtailTestUtils, TestCase):
 
         soup = self.get_soup(response.content)
 
-        # Check the private privacy indicator is visible
-        private_indicator = soup.select_one("[data-privacy-sidebar-private]")
-        # There should not be any classes applied
-        self.assertEqual(private_indicator["class"], [])
+        public_link = soup.select_one('[data-w-zone-switch-key-value="isPublic"]')
+        private_link = soup.select_one('[data-w-zone-switch-key-value="!isPublic"]')
 
-        # Privacy indicator should be hidden
-        public_indicator = soup.select_one("[data-privacy-sidebar-public].w-hidden")
-        self.assertIsNotNone(public_indicator)
+        # Check the private privacy indicator is visible
+        self.assertEqual(private_link["class"], ["page-status-tag"])
+
+        # Check the public privacy indicator is hidden
+        self.assertEqual(public_link["class"], ["page-status-tag", "w-hidden"])
 
     def test_explorer_private_child(self):
         """
@@ -453,27 +442,16 @@ class TestPrivacyIndicators(WagtailTestUtils, TestCase):
         # Check the response
         self.assertEqual(response.status_code, 200)
 
+        soup = self.get_soup(response.content)
+
+        public_link = soup.select_one('[data-w-zone-switch-key-value="isPublic"]')
+        private_link = soup.select_one('[data-w-zone-switch-key-value="!isPublic"]')
+
         # Check the privacy indicator is private
-        self.assertContains(
-            response,
-            '''data-privacy-sidebar-private
-            class=""
-            data-controller="w-zone"
-            data-action="w-privacy:changed@document->w-zone#switch"
-            data-w-zone-inactive-class="w-hidden"
-            data-w-zone-mode-value="active"
-            data-w-zone-switch-key-value="!isPublic"''',
-        )
-        self.assertContains(
-            response,
-            '''data-privacy-sidebar-public
-            class="w-hidden"
-            data-controller="w-zone"
-            data-action="w-privacy:changed@document->w-zone#switch"
-            data-w-zone-inactive-class="w-hidden"
-            data-w-zone-mode-value=""
-            data-w-zone-switch-key-value="isPublic"''',
-        )
+        self.assertEqual(private_link["class"], ["page-status-tag"])
+
+        # Check the public privacy indicator is hidden
+        self.assertEqual(public_link["class"], ["page-status-tag", "w-hidden"])
 
     def test_explorer_list_homepage(self):
         """
@@ -523,27 +501,15 @@ class TestPrivacyIndicators(WagtailTestUtils, TestCase):
         # Check the response
         self.assertEqual(response.status_code, 200)
 
+        soup = self.get_soup(response.content)
+
+        public_link = soup.select_one('[data-w-zone-switch-key-value="isPublic"]')
+        private_link = soup.select_one('[data-w-zone-switch-key-value="!isPublic"]')
+
         # Check the privacy indicator is public
-        self.assertContains(
-            response,
-            '''data-privacy-sidebar-private
-            class="w-hidden"
-            data-controller="w-zone"
-            data-action="w-privacy:changed@document->w-zone#switch"
-            data-w-zone-inactive-class="w-hidden"
-            data-w-zone-mode-value=""
-            data-w-zone-switch-key-value="!isPublic"''',
-        )
-        self.assertContains(
-            response,
-            '''data-privacy-sidebar-public
-            class=""
-            data-controller="w-zone"
-            data-action="w-privacy:changed@document->w-zone#switch"
-            data-w-zone-inactive-class="w-hidden"
-            data-w-zone-mode-value="active"
-            data-w-zone-switch-key-value="isPublic"''',
-        )
+        self.assertEqual(public_link["class"], ["page-status-tag"])
+
+        self.assertEqual(private_link["class"], ["page-status-tag", "w-hidden"])
 
     def test_edit_private(self):
         """
@@ -556,27 +522,15 @@ class TestPrivacyIndicators(WagtailTestUtils, TestCase):
         # Check the response
         self.assertEqual(response.status_code, 200)
 
+        soup = self.get_soup(response.content)
+
+        public_link = soup.select_one('[data-w-zone-switch-key-value="isPublic"]')
+        private_link = soup.select_one('[data-w-zone-switch-key-value="!isPublic"]')
+
         # Check the privacy indicator is private
-        self.assertContains(
-            response,
-            '''data-privacy-sidebar-private
-            class=""
-            data-controller="w-zone"
-            data-action="w-privacy:changed@document->w-zone#switch"
-            data-w-zone-inactive-class="w-hidden"
-            data-w-zone-mode-value="active"
-            data-w-zone-switch-key-value="!isPublic"''',
-        )
-        self.assertContains(
-            response,
-            '''data-privacy-sidebar-public
-            class="w-hidden"
-            data-controller="w-zone"
-            data-action="w-privacy:changed@document->w-zone#switch"
-            data-w-zone-inactive-class="w-hidden"
-            data-w-zone-mode-value=""
-            data-w-zone-switch-key-value="isPublic"''',
-        )
+        self.assertEqual(private_link["class"], ["page-status-tag"])
+
+        self.assertEqual(public_link["class"], ["page-status-tag", "w-hidden"])
 
     def test_edit_private_child(self):
         """
@@ -590,26 +544,15 @@ class TestPrivacyIndicators(WagtailTestUtils, TestCase):
         self.assertEqual(response.status_code, 200)
 
         # Check the privacy indicator is private
-        self.assertContains(
-            response,
-            '''data-privacy-sidebar-private
-            class=""
-            data-controller="w-zone"
-            data-action="w-privacy:changed@document->w-zone#switch"
-            data-w-zone-inactive-class="w-hidden"
-            data-w-zone-mode-value="active"
-            data-w-zone-switch-key-value="!isPublic"''',
-        )
-        self.assertContains(
-            response,
-            '''data-privacy-sidebar-public
-            class="w-hidden"
-            data-controller="w-zone"
-            data-action="w-privacy:changed@document->w-zone#switch"
-            data-w-zone-inactive-class="w-hidden"
-            data-w-zone-mode-value=""
-            data-w-zone-switch-key-value="isPublic"''',
-        )
+        soup = self.get_soup(response.content)
+
+        public_link = soup.select_one('[data-w-zone-switch-key-value="isPublic"]')
+        private_link = soup.select_one('[data-w-zone-switch-key-value="!isPublic"]')
+
+        # Check the privacy indicator is private
+        self.assertEqual(private_link["class"], ["page-status-tag"])
+
+        self.assertEqual(public_link["class"], ["page-status-tag", "w-hidden"])
 
     def test_private_page_options_only_password_groups(self):
         # change the private_page_options to password and login

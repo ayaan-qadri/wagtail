@@ -71,18 +71,41 @@ export class ZoneController extends Controller {
     this.modeValue = ZoneMode.Inactive;
   }
 
-  modeValueChanged(current: ZoneMode) {
+  modeValueChanged(current: ZoneMode, previous?: ZoneMode) {
+    const element = this.element;
     const activeClasses = this.activeClasses;
     const inactiveClasses = this.inactiveClasses;
 
-    if (!(activeClasses.length + inactiveClasses.length)) return;
+    if (
+      !(activeClasses.length + inactiveClasses.length) ||
+      previous === current
+    )
+      return;
+
+    if (previous === undefined) {
+      if (
+        activeClasses.every((className) =>
+          element.classList.contains(className),
+        )
+      ) {
+        this.modeValue = ZoneMode.Active;
+      }
+
+      if (
+        inactiveClasses.every((className) =>
+          element.classList.contains(className),
+        )
+      ) {
+        this.modeValue = ZoneMode.Inactive;
+      }
+    }
 
     if (current === ZoneMode.Active) {
-      this.element.classList.add(...activeClasses);
-      this.element.classList.remove(...inactiveClasses);
+      element.classList.add(...activeClasses);
+      element.classList.remove(...inactiveClasses);
     } else {
-      this.element.classList.add(...inactiveClasses);
-      this.element.classList.remove(...activeClasses);
+      element.classList.add(...inactiveClasses);
+      element.classList.remove(...activeClasses);
     }
   }
 
@@ -112,18 +135,16 @@ export class ZoneController extends Controller {
       params?: { mode: ZoneMode };
     },
   ) {
-    const data = { ...event?.detail, ...event?.params };
-    const switchKey = this.switchKeyValue || 'active';
+    const { switchKey, ...data } = {
+      switchKey: this.switchKeyValue || ZoneMode.Active,
+      ...event?.detail,
+      ...event?.params,
+    };
 
     const isNegated = switchKey.startsWith('!');
     const key = isNegated ? switchKey.slice(1) : switchKey;
 
-    if (!key || !(key in data)) {
-      console.error(
-        `Switch key not found in event detail or params or data attribute of value`,
-      );
-      return;
-    }
+    if (!key || !(key in data)) return;
 
     const match = !!data[key];
     const modeValue = match === isNegated ? ZoneMode.Inactive : ZoneMode.Active;

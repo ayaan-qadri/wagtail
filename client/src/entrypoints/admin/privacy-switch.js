@@ -50,12 +50,13 @@ $(() => {
           );
         },
         set_privacy_done(modal, { is_public: isPublic }) {
-          const privacyDoneEvent = new CustomEvent('w-privacy:changed', {
-            bubbles: true,
-            cancelable: false,
-            detail: { isPublic },
-          });
-          document.dispatchEvent(privacyDoneEvent);
+          document.dispatchEvent(
+            new CustomEvent('w-privacy:changed', {
+              bubbles: true,
+              cancelable: false,
+              detail: { isPublic },
+            }),
+          );
           modal.close();
         },
       },
