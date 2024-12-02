@@ -167,6 +167,37 @@ describe('ZoneController', () => {
     });
   });
 
+  describe('initial mode value based on class', () => {
+    it('should set mode value to active when initial class matches active class', async () => {
+      await setup(`
+        <div
+          class="mode-zone"
+          data-controller="w-zone"
+          data-w-zone-active-class="mode-zone"
+          data-w-zone-inactive-class="w-hidden"
+        ></div>
+      `);
+      const element = document.querySelector('div');
+      await jest.runAllTimersAsync();
+      expect(element.getAttribute('data-w-zone-mode-value')).toBe('active');
+    });
+
+    it('should set mode value to empty when initial class matches inactive class', async () => {
+      await setup(`
+        <div
+          class="inactive"
+          data-controller="w-zone"
+          data-w-zone-active-class="mode-zone"
+          data-w-zone-inactive-class="inactive"
+        ></div>
+      `);
+
+      const element = document.querySelector('div');
+      await jest.runAllTimersAsync();
+      expect(element.getAttribute('data-w-zone-mode-value')).toBe('');
+    });
+  });
+
   describe('switch method', () => {
     it('should add active classes & remove inactive classes when key is truthy', async () => {
       await setup(`

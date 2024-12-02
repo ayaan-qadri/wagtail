@@ -49,6 +49,7 @@ export class ZoneController extends Controller {
 
   /** Classes to append when the mode is active & remove when inactive. */
   declare readonly activeClasses: string[];
+  /** Classes to append when the mode is inactive & remove when active. */
   declare readonly inactiveClasses: string[];
   /** Delay, in milliseconds, to use when debouncing the mode updates. */
   declare readonly delayValue: number;
