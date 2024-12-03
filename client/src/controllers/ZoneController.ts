@@ -51,6 +51,7 @@ export class ZoneController extends Controller {
   declare readonly activeClasses: string[];
   /** Classes to append when the mode is inactive & remove when active. */
   declare readonly inactiveClasses: string[];
+
   /** Delay, in milliseconds, to use when debouncing the mode updates. */
   declare readonly delayValue: number;
   /** Key to use when switching the active state via the `switch` method. */
@@ -77,12 +78,16 @@ export class ZoneController extends Controller {
     const activeClasses = this.activeClasses;
     const inactiveClasses = this.inactiveClasses;
 
+    // If there are no classes to toggle, or the mode hasn't changed, do nothing.
     if (
       !(activeClasses.length + inactiveClasses.length) ||
       previous === current
-    )
+    ) {
       return;
+    }
 
+    // If the previous mode has not been defined (via ...mode-value), then
+    // when running the initial setup, use existing classes to determine the mode.
     if (previous === undefined) {
       if (
         activeClasses.every((className) =>
@@ -99,8 +104,11 @@ export class ZoneController extends Controller {
       ) {
         this.modeValue = ZoneMode.Inactive;
       }
+      // Changing the modeValue will trigger this method again with the correct previous value.
+      return;
     }
 
+    // If the mode has changed, update the classes accordingly.
     if (current === ZoneMode.Active) {
       element.classList.add(...activeClasses);
       element.classList.remove(...inactiveClasses);

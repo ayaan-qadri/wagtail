@@ -980,24 +980,48 @@ class TestQueryPopularity(TestCase):
 class TestQueryHitsReportView(BaseReportViewTestCase):
     url_name = "wagtailsearchpromotions:search_terms"
 
+    @classmethod
+    def setUpTestData(self):
+        self.query = Query.get("A query with three hits")
+        self.query.add_hit()
+        self.query.add_hit()
+        self.query.add_hit()
+        Query.get("a query with no hits")
+        Query.get("A query with one hit").add_hit()
+        query = Query.get("A query with two hits")
+        query.add_hit()
+        query.add_hit()
+
     def test_simple(self):
         response = self.get()
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "wagtailadmin/reports/base_report.html")
         self.assertTemplateUsed(
             response,
-            "wagtailsearchpromotions/search_terms_report_results.html",
+            "wagtailadmin/reports/base_report_results.html",
         )
         self.assertBreadcrumbs(
-            [{"url": "", "label": "Search Terms"}],
+            [{"url": "", "label": "Search terms"}],
             response.content,
         )
 
-        self.assertContains(response, "There are no results.")
-
         soup = self.get_soup(response.content)
+        trs = soup.select("main tr")
+
+        # Default ordering should be by hits descending
+        self.assertEqual(
+            [[cell.text.strip() for cell in tr.select("th,td")] for tr in trs],
+            [
+                ["Search term(s)", "Views"],
+                ["a query with three hits", "3"],
+                ["a query with two hits", "2"],
+                ["a query with one hit", "1"],
+            ],
+        )
+
+        self.assertNotContains(response, "There are no results.")
         self.assertActiveFilterNotRendered(soup)
-        self.assertPageTitle(soup, "Search Terms - Wagtail")
+        self.assertPageTitle(soup, "Search terms - Wagtail")
 
     def test_get_with_no_permissions(self):
         self.user.is_superuser = False
@@ -1016,8 +1040,16 @@ class TestQueryHitsReportView(BaseReportViewTestCase):
         response = self.get(params={"export": "csv"})
         self.assertEqual(response.status_code, 200)
 
-        data_lines = response.getvalue().decode().split("\n")
-        self.assertEqual(data_lines[0], "Search term(s),Views\r")
+        data_lines = response.getvalue().decode().splitlines()
+        self.assertEqual(
+            data_lines,
+            [
+                "Search term(s),Views",
+                "a query with three hits,3",
+                "a query with two hits,2",
+                "a query with one hit,1",
+            ],
+        )
 
     def test_xlsx_export(self):
         response = self.get(params={"export": "xlsx"})
@@ -1026,9 +1058,48 @@ class TestQueryHitsReportView(BaseReportViewTestCase):
         worksheet = load_workbook(filename=BytesIO(workbook_data))["Sheet1"]
         cell_array = [[cell.value for cell in row] for row in worksheet.rows]
         self.assertEqual(
-            cell_array[0],
-            ["Search term(s)", "Views"],
+            cell_array,
+            [
+                ["Search term(s)", "Views"],
+                ["a query with three hits", 3],
+                ["a query with two hits", 2],
+                ["a query with one hit", 1],
+            ],
         )
+
+    def test_ordering(self):
+        cases = {
+            "query_string": [
+                ["a query with one hit", "1"],
+                ["a query with three hits", "3"],
+                ["a query with two hits", "2"],
+            ],
+            "-query_string": [
+                ["a query with two hits", "2"],
+                ["a query with three hits", "3"],
+                ["a query with one hit", "1"],
+            ],
+            "_hits": [
+                ["a query with one hit", "1"],
+                ["a query with two hits", "2"],
+                ["a query with three hits", "3"],
+            ],
+            "-_hits": [
+                ["a query with three hits", "3"],
+                ["a query with two hits", "2"],
+                ["a query with one hit", "1"],
+            ],
+        }
+        for ordering, results in cases.items():
+            with self.subTest(ordering=ordering):
+                response = self.get(params={"ordering": ordering})
+                self.assertEqual(response.status_code, 200)
+                soup = self.get_soup(response.content)
+                trs = soup.select("main tbody tr")
+                self.assertEqual(
+                    [[cell.text.strip() for cell in tr.select("td")] for tr in trs],
+                    results,
+                )
 
 
 class TestFilteredQueryHitsView(BaseReportViewTestCase):
@@ -1036,14 +1107,39 @@ class TestFilteredQueryHitsView(BaseReportViewTestCase):
 
     def setUp(self):
         self.user = self.login()
-        self.query_hit = Query.get("Found")
-        self.query_hit.add_hit(timezone.now())
+        self.query_hit = Query.get("This will be found")
+        self.date = timezone.now().date()
+        self.query_hit.add_hit(date=self.date)
 
-    def test_filter_by_query_string(self):
-        response = self.get(params={"query_string": "Found"})
+    def test_search_by_query_string(self):
+        response = self.get(params={"q": "Found"})
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Found")
+        self.assertContains(response, "this will be found")
+        self.assertNotContains(response, "There are no results.")
+        self.assertActiveFilterNotRendered(self.get_soup(response.content))
 
-        response = self.get(params={"query_string": "Not found"})
+        response = self.get(params={"q": "Not found"})
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "There are no results.")
+        self.assertNotContains(response, "this will be found")
+        self.assertActiveFilterNotRendered(self.get_soup(response.content))
+
+    def test_filter_by_date(self):
+        params = {
+            "hit_date_from": self.date.replace(day=1, month=1),
+        }
+        response = self.get(params=params)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "this will be found")
+        self.assertNotContains(response, "There are no results.")
+        self.assertActiveFilter(
+            self.get_soup(response.content), "hit_date_from", params["hit_date_from"]
+        )
+
+        params["hit_date_from"] = self.date.replace(year=self.date.year + 1)
+        params["hit_date_to"] = self.date.replace(year=self.date.year + 2)
+
+        response = self.get(params=params)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "There are no results.")
+        self.assertNotContains(response, "this will be found")
