@@ -335,8 +335,6 @@ export class TypedTableBlock {
       )
       .addClass('button--icon text-replace white')
       .attr('aria-label', this.blockDef.meta.strings.ADD_COLUMN)
-      .addClass('button--icon text-replace white')
-      .attr('aria-label', this.blockDef.meta.strings.ADD_COLUMN)
       .attr('aria-expanded', 'false')
       .attr('title', this.blockDef.meta.strings.ADD_COLUMN);
 
